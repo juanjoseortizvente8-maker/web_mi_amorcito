@@ -111,7 +111,7 @@ st.divider()
 st.subheader("📸 Nuestros momentos juntos")
 fotos_disponibles = sorted(
     foto
-    for foto in Path("fotos").iterdir()
+    for foto in (Path(__file__).resolve().parent / "fotos").iterdir()
     if foto.is_file() and foto.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp", ".gif"}
 )
 
