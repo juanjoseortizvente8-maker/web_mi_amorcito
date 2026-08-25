@@ -1,5 +1,7 @@
 import streamlit as st
 from datetime import datetime
+from pathlib import Path
+from zoneinfo import ZoneInfo
 import random
 
 # Configuración de la página
@@ -39,12 +41,55 @@ st.balloons()
 st.title("💖 Para la persona más especial")
 st.write("Creé esta pequeña página para recordar lo mucho que te amo.")
 
+# --- TEMPORIZADOR DE ANIVERSARIO ---
+@st.fragment(run_every="60s")
+def mostrar_temporizador_aniversario():
+    zona_australia = ZoneInfo("Australia/Sydney")
+    ahora_australia = datetime.now(zona_australia)
+
+    if ahora_australia.day == 26:
+        st.success(
+            "💖 ¡Feliz aniversario, mi amorcito! 💖 Hoy es 26 en Australia, "
+            "nuestro día especial. Aunque estemos lejos, este amor nos encuentra "
+            "siempre. Te amo muchísimo y celebro cada día contigo. ✨"
+        )
+    else:
+        if ahora_australia.day < 26:
+            proximo_aniversario = datetime(
+                ahora_australia.year,
+                ahora_australia.month,
+                26,
+                tzinfo=zona_australia,
+            )
+        else:
+            siguiente_mes = ahora_australia.month % 12 + 1
+            siguiente_anio = ahora_australia.year + (ahora_australia.month == 12)
+            proximo_aniversario = datetime(
+                siguiente_anio,
+                siguiente_mes,
+                26,
+                tzinfo=zona_australia,
+            )
+
+        faltan = proximo_aniversario - ahora_australia
+        dias_faltantes = faltan.days
+        horas_faltantes, segundos = divmod(faltan.seconds, 3600)
+        minutos_faltantes, _ = divmod(segundos, 60)
+        st.info(
+            f"🕰️ Faltan {dias_faltantes} días, {horas_faltantes} horas y "
+            f"{minutos_faltantes} minutos para nuestro próximo aniversario "
+            f"en Australia. 💌"
+        )
+
+
+mostrar_temporizador_aniversario()
+
 st.divider()
 
 # --- 1. CONTADOR DE TIEMPO JUNTOS ---
 st.subheader("❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️❤️Siempre y más alla del siempre Mi amorcito ❤️❤️❤️❤️❤️❤️❤️")
 
-# ⚠️ Cambia esta fecha: (Año, Mes, Día, Hora, Minuto)
+
 fecha_inicio = datetime(2024, 10, 26, 19, 34) 
 ahora = datetime.now()
 
@@ -62,7 +107,29 @@ st.caption("¡Y cada segundo a tu lado vale la pena! ❤️")
 
 st.divider()
 
-# --- 2. GENERADOR DE RAZONES ---
+# --- 2. FOTOS JUNTOS ---
+st.subheader("📸 Nuestros momentos juntos")
+fotos_disponibles = sorted(
+    foto
+    for foto in Path("fotos").iterdir()
+    if foto.is_file() and foto.suffix.lower() in {".jpg", ".jpeg", ".png", ".webp", ".gif"}
+)
+
+if fotos_disponibles:
+    if "foto_actual" not in st.session_state:
+        st.session_state.foto_actual = random.choice(fotos_disponibles)
+
+    if st.button("Ver un recuerdo al azar 💞", use_container_width=True):
+        st.session_state.foto_actual = random.choice(fotos_disponibles)
+
+    st.image(str(st.session_state.foto_actual), use_container_width=True)
+    st.caption("Cada recuerdo contigo es mi favorito. ❤️")
+else:
+    st.info("Agrega nuestras fotos en la carpeta `fotos` y aquí aparecerán nuestros recuerdos. 💌")
+
+st.divider()
+
+# --- 3. GENERADOR DE RAZONES ---
 st.subheader("💌 Razones por las que te amo")
 
 razones = [
@@ -88,7 +155,7 @@ else:
 
 st.divider()
 
-# --- 3. CUPONES DE AMOR INTERACTIVOS ---
+# --- 4. CUPONES DE AMOR INTERACTIVOS ---
 st.subheader("🎟️ Cupones especiales para ti")
 st.write("Toca un cupón para canjearlo cuando quieras:")
 
